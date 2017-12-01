@@ -6,19 +6,14 @@ const events = require('events');
 
 // Solution for #1. Asynchronous Operations
 function doAsync(input){
-    let cur_elem = input.splice(0,1)[0],                    // get first element of input
-    len = cur_elem.length;                                  // determines if the element is a single value
-
-    // do an asynocOp to each element simulating a parallel execution
-    for(let val of cur_elem){
+    let cur_elem = input.splice(0,1)[0],                    // process first element of the input
+    len = cur_elem.length;                                  // determines how many parallel execution
+                                                          
+    for(let val of cur_elem){                               // do an asynocOp to each element simulating a parallel execution
         asyncOp(val).then(()=>{
             len--;                                          //tracks the number of promises done on a parallel execution
-            if(input.length === 0){
-                return;                     
-            }
-            if(len === 0){
-                doAsync(input);                             //proceed to next element of input if completed
-            }
+            if(input.length === 0) return;
+            if(len === 0) doAsync(input);                   //proceed to next element of input if completed
         });
     }
 }
@@ -47,9 +42,7 @@ class RandStringSource extends events.EventEmitter{
 }
 
 //solution for #3 Resource Pooling
-
-//A resource object class
-class ResourceObject extends events.EventEmitter {
+class ResourceObject extends events.EventEmitter {          //A resource object class
     constructor(){
         super();
         this.available = true;
@@ -67,34 +60,27 @@ class ResourceObject extends events.EventEmitter {
 }
 
 class ResourceManager{
-    constructor(count){
-        // create and initialize internal arrays
-        // taskQueue - waiting list for unentertained callbacks
-        // resources - an array container of all object resources
-        this.taskQueue = [];
-        this.resources = [];
-        //create resource objects base on count
-        for(let i=0;i<count;i++){
+    constructor(count){                                     // create and initialize internal arrays
+        this.taskQueue = [];                                // taskQueue - waiting list for unentertained callbacks
+        this.resources = [];                                // resources - an array container of all object resources
+
+        for(let i=0;i<count;i++){                           //create resource objects base on count
             let resource = new ResourceObject();
-            //listen for finished task
-            resource.on('release',()=>{
-                //execute 1st waiting task on the queue
-                //if no more task do nothing
-                if(this.taskQueue.length != 0) this.taskQueue.splice(0,1)[0](resource);
+            resource.on('release',()=>{                     //listen for finished task then execute waiting task on the queue
+                if(this.taskQueue.length != 0){
+                    this.taskQueue.splice(0,1)[0](resource);
+                } 
             });
             this.resources.push(resource);
         }
     }
 
-    borrow(callback){
-        //find available resource objects first
-        //if resource available execute callback
-        //if non, put callback to waiting queue
-        let obj = this._findAvailable();
+    borrow(callback){     
+        let obj = this._findAvailable();                    //find available resource objects first
         if(obj){
-            callback(obj.reserve());
+            callback(obj.reserve());                        //if resource available execute callback
         }else{
-            this.taskQueue.push(callback);
+            this.taskQueue.push(callback);                  //if non, put callback to waiting queue
         }
     }   
 
