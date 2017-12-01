@@ -9,7 +9,7 @@ function doAsync(input){
     let cur_elem = input.splice(0,1)[0],                    // get first element of input
     len = cur_elem.length;                                  // determines if the element is a single value
 
-    // iterate on each value of the first element
+    // do an asynocOp to each element simulating a parallel execution
     for(let val of cur_elem){
         asyncOp(val).then(()=>{
             len--;                                          //tracks the number of promises done on a parallel execution
@@ -75,7 +75,7 @@ class ResourceManager{
         this.resources = [];
         //create resource objects base on count
         for(let i=0;i<count;i++){
-            let resource = new ResourceObject(`obj${i}`);
+            let resource = new ResourceObject();
             //listen for finished task
             resource.on('release',()=>{
                 //execute 1st waiting task on the queue
